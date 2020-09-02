@@ -310,6 +310,12 @@ inline OutArchive& operator>>(OutArchive& out_archive,
   return out_archive;
 }
 
+inline OutArchive& operator>>(OutArchive& out_archive, VertexData& vdata) {
+  out_archive >> vdata.label_;
+  out_archive >> vdata.attributes_;
+  return out_archive;
+}
+
 }  // namespace grape
 
 #endif  // GRAPE_SERIALIZATION_OUT_ARCHIVE_H_

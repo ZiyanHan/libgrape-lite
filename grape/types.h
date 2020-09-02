@@ -29,6 +29,12 @@ namespace grape {
  */
 struct EmptyType {};
 
+struct VertexData{
+  VertexData() { attributes_.resize(0); }
+  uint16_t label_;
+  std::vector<std::string> attributes_;
+};
+
 inline std::ostream& operator<<(std::ostream& out, const EmptyType) {
   return out;
 }

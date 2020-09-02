@@ -230,6 +230,12 @@ inline InArchive& operator<<(InArchive& in_archive,
   return in_archive;
 }
 
+inline InArchive& operator<<(InArchive& in_archive, const VertexData& vdata) {
+  in_archive << vdata.label_;
+  in_archive << vdata.attributes_;
+  return in_archive;
+}
+
 }  // namespace grape
 
 #endif  // GRAPE_SERIALIZATION_IN_ARCHIVE_H_

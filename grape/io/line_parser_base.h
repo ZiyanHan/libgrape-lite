@@ -17,6 +17,7 @@ limitations under the License.
 #define GRAPE_IO_LINE_PARSER_BASE_H_
 
 #include <string>
+#include "grape/util.h"
 
 namespace grape {
 
@@ -66,6 +67,22 @@ namespace internal {
 // return the next position after char sequence that consumed by the matcher.
 template <typename T>
 inline const char* match(char const* str, T& r, char const* end = nullptr);
+
+template <>
+inline const char* match(char const* str, grape::VertexData& r, char const*){
+  char* match_end;
+  r.label_ = std::strtol(str, &match_end, 10);
+
+  std::string tmp_str(match_end);
+  tmp_str = tmp_str.substr(0, tmp_str.length() - 1); // remove the last '\n'
+  std::vector<std::string> attrs = split(tmp_str, " ");
+  r.attributes_.clear();
+  for (auto attr: attrs) {
+    if (attr == "" || attr == "\n") continue;
+    r.attributes_.emplace_back(attr);
+  }
+  return nullptr;
+}
 
 template <>
 inline const char* match<int32_t>(char const* str, int32_t& r, char const*) {

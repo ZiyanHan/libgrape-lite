@@ -60,6 +60,33 @@ class SSSP : public ParallelAppBase<FRAG_T, SSSPContext<FRAG_T>>,
     ctx.exec_time -= GetCurrentTime();
 #endif
 
+    /* for test. */
+    int32_t vlabel = 1;
+    std::vector<std::string> attrs;
+    // test whether successfully load label and attrs for vertices, 
+    // and test the func 'GetAllVerticesID', 'GetVertexAttributes', 'GetChildrenID' and 'GetParentsID'
+    using oid_t = typename fragment_t::oid_t;
+    for (auto v: frag.GetAllVerticesID()) {
+      std::vector<oid_t> v_children, v_parents;
+      if (frag.GetVertexLabel(v, vlabel) && frag.GetVertexAttributes(v, attrs) && frag.GetChildrenID(v, v_children) && frag.GetParentsID(v, v_parents)) {
+        std::string tmp_str, tmp_children, tmp_parents;
+        for (auto attr: attrs) {
+          tmp_str += attr;
+          tmp_str += " ";
+        }
+        for (auto child: v_children) {
+          tmp_children += std::to_string(child);
+          tmp_children += " ";
+        }
+        for (auto parent: v_parents) {
+          tmp_parents += std::to_string(parent);
+          tmp_parents += " ";
+        }
+        LOG(INFO) << "fid: " << frag.fid() << ", vid: " << v << ", vlabel = " << vlabel
+                  << ", attrs: " << tmp_str << ", children oid: " << tmp_children << ", parents oid: " << tmp_parents;
+      }
+    }  
+
     ctx.next_modified.parallel_clear(thread_num());
 
     // Get the channel. Messages assigned to this channel will be sent by the

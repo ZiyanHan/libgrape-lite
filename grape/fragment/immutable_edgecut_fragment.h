@@ -1105,6 +1105,119 @@ class ImmutableEdgecutFragment
     }
   }
 
+  // get oid of all inner and outer vertices
+  inline const std::vector<OID_T> GetAllVerticesID() const {
+    std::vector<OID_T> vertices_ids;
+    for (auto v: Vertices()) {
+      vertices_ids.emplace_back(GetId(v));
+    }
+    return vertices_ids;
+  }
+
+ // get oid of all inner vertices
+  inline const std::vector<OID_T> GetAllInnerVerticesID() const {
+    std::vector<OID_T> inner_vertices_ids;
+    for (auto v: InnerVertices()) {
+      inner_vertices_ids.emplace_back(GetId(v));
+    }
+    return inner_vertices_ids;
+  }
+
+  // get oid of all outer vertices
+  inline const std::vector<OID_T> GetAllOuterVerticesID() const {
+    std::vector<OID_T> outer_vertices_ids;
+    for (auto v: OuterVertices()) {
+      outer_vertices_ids.emplace_back(GetId(v));
+    }
+    return outer_vertices_ids;
+  }
+  
+  // given oid of vertex, return its children' oid set
+  inline const bool GetChildrenID(OID_T vid, std::vector<OID_T> &v_children) const {
+    vertex_t v_src;
+    bool getVertex = GetVertex(vid, v_src);
+    if (!getVertex) return false;
+    auto es = GetOutgoingAdjList(v_src);
+    for (auto e: es) {
+      v_children.emplace_back(GetId(e.neighbor));
+    }
+    return true;
+  }
+
+  // given oid of vertex, return its parents' oid set
+  inline const bool GetParentsID(OID_T vid, std::vector<OID_T> &v_parents) const {
+    vertex_t v_dst;
+    bool getVertex = GetVertex(vid, v_dst);
+    if (!getVertex) return false;
+    auto es = GetIncomingAdjList(v_dst);
+    for (auto e: es) {
+      v_parents.emplace_back(GetId(e.neighbor));
+    }
+    return true;
+  }
+
+  // given oid of inner or outer vertex, return its label
+  inline const bool GetVertexLabel(OID_T vid, int32_t &vlabel) const {
+    vertex_t v;
+    bool getVertex = GetVertex(vid, v);
+    if (getVertex) {
+      vlabel = GetData(v).label_;
+      return true;
+    } else {
+      return false;
+    }
+  }
+  // given oid of inner or outer vertex, return its attributes
+  inline const bool GetVertexAttributes(OID_T vid, std::vector<std::string> &attrs) const {
+    vertex_t v;
+    bool getVertex = GetVertex(vid, v);
+    if (getVertex) {
+      attrs = GetData(v).attributes_;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // given oid of vertex, check if it is a inner vertex
+  inline bool IsInnerVertex(const OID_T vid) const {
+    vertex_t v;
+    bool getVertex = GetVertex(vid, v);
+    if (!getVertex) return false;
+    return IsInnerVertex(v);
+  }
+
+  // given oid of vertex, check if it is a outer vertex
+  inline bool IsOuterVertex(const OID_T vid) const {
+    vertex_t v;
+    bool getVertex = GetVertex(vid, v);
+    if (!getVertex) return false;
+    return IsOuterVertex(v);
+  }
+
+  // given oid of vertex, check if it is a inner or outer vertex, i.e., whether it can be obtained by the frag
+  inline bool IsInnerOuterVertex(const OID_T vid) const {
+    vertex_t v;
+    bool getVertex = GetVertex(vid, v);
+    if (!getVertex) return false;
+    return true;
+  }
+
+  // given oid of src and dst, check if there exists an edge between them. If so, return the edge label
+  inline const bool GetEdgeLabel(OID_T src, OID_T dst, EDATA_T &elabel) const {
+    vertex_t v_src;
+    bool getVertex = GetVertex(src, v_src);
+    if (!getVertex) return false;
+    auto es = GetOutgoingAdjList(v_src);
+    for (auto e: es) {
+      if (GetId(e.neighbor) == dst) {
+        elabel = e.data;
+        return true;
+      }
+    }
+    return false;
+  }
+
  private:
   void initMessageDestination(const MessageStrategy& msg_strategy) {
     if (msg_strategy == MessageStrategy::kAlongOutgoingEdgeToOuterVertex) {
