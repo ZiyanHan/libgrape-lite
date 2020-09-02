@@ -31,7 +31,7 @@ struct EmptyType {};
 
 struct VertexData{
   VertexData() { attributes_.resize(0); }
-  uint16_t label_;
+  int32_t label_;
   std::vector<std::string> attributes_;
 };
 
