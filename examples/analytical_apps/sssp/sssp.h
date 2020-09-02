@@ -60,7 +60,11 @@ class SSSP : public ParallelAppBase<FRAG_T, SSSPContext<FRAG_T>>,
     ctx.exec_time -= GetCurrentTime();
 #endif
 
-    /* for test. */
+    /*================================================== for test. ===================================================*/
+    if (native_source) {
+      LOG(INFO)<<"source lid: " << source.GetValue() << ", source oid: " << frag.GetId(source);
+      LOG(INFO)<<"source label: " << frag.GetData(source).label_;
+    }
     int32_t vlabel = 1;
     std::vector<std::string> attrs;
     // test whether successfully load label and attrs for vertices, 
@@ -85,7 +89,92 @@ class SSSP : public ParallelAppBase<FRAG_T, SSSPContext<FRAG_T>>,
         LOG(INFO) << "fid: " << frag.fid() << ", vid: " << v << ", vlabel = " << vlabel
                   << ", attrs: " << tmp_str << ", children oid: " << tmp_children << ", parents oid: " << tmp_parents;
       }
-    }  
+    }
+    // test for the func 'GetEdgeLabel'
+    using edata_t = typename fragment_t::edata_t;
+    edata_t edata = 0;
+    bool hasEdge = frag.GetEdgeLabel(11, 16, edata);
+    if (hasEdge)
+      LOG(INFO) << "fid: " << frag.fid() << ", (11, 16) exist: " << hasEdge << ", elabel: " << edata;
+    else
+      LOG(INFO) << "fid: " << frag.fid() << " can not obtain edge (11, 16)";
+    hasEdge = frag.GetEdgeLabel(11, 13, edata);
+    if (hasEdge)
+      LOG(INFO) << "fid: " << frag.fid() << ", (11, 13) exist: " << hasEdge << ", elabel: " << edata;
+    else
+      LOG(INFO) << "fid: " << frag.fid() << " can not obtain edge (11, 13)";
+    hasEdge = frag.GetEdgeLabel(16, 12, edata);
+    if (hasEdge)
+      LOG(INFO) << "fid: " << frag.fid() << ", (16, 12) exist: " << hasEdge << ", elabel: " << edata;
+    else
+      LOG(INFO) << "fid: " << frag.fid() << " can not obtain edge (16, 12)";
+    // test for inner vertices in frag
+    for (auto v: frag.GetAllInnerVerticesID()) {
+      LOG(INFO) << "fid: " << frag.fid() << ", inner vid: " << v;
+    }
+    // test for outer vertices in frag
+    for (auto v: frag.GetAllOuterVerticesID()) {
+      LOG(INFO) << "fid: " << frag.fid() << ", outer vid: " << v;
+    }
+    // test for whether the frag can get the info of vertex that neither inner nor outer vertex
+    if (frag.fid() == 1) {
+      if (frag.GetVertexLabel(12, vlabel)) LOG(INFO) << "fid 1, oid 12, label: " << vlabel;
+      else LOG(INFO) << "fid 1 can not get the information of oid 12";
+      if (frag.GetVertexLabel(16, vlabel)) LOG(INFO) << "fid 1, oid 16, label: " << vlabel;
+      else LOG(INFO) << "fid 1 can not get the information of oid 16";
+      if (frag.GetVertexLabel(11, vlabel)) LOG(INFO) << "fid 1, oid 11, label: " << vlabel;
+      else LOG(INFO) << "fid 1 can not get the information of oid 11";
+    }
+    // test for edges that hold in the frag
+    for (auto v: frag.Vertices()) {
+      LOG(INFO) << "fid: " << frag.fid() << ", oid " << frag.GetId(v) << ", isBorderVertex: " << frag.IsBorderVertex(v) 
+                << ", IsIncomingBorderVertex: " << frag.IsIncomingBorderVertex(v) << ", IsOutgoingBorderVertex: " << frag.IsOutgoingBorderVertex(v);
+      auto src_oid = frag.GetId(v);
+      auto es = frag.GetOutgoingAdjList(v);
+      for (auto e: es) {
+        auto dst_oid = frag.GetId(e.neighbor);
+        auto elabel = e.data;
+        LOG(INFO) << "fid: " << frag.fid() << ", all outgoing src=" << src_oid << ", dst=" << dst_oid << ", label=" << elabel;
+      }
+    }
+    for (auto v: frag.InnerVertices()) {
+      auto src_oid = frag.GetId(v);
+      auto es = frag.GetOutgoingAdjList(v);
+      for (auto e: es) {
+        auto dst_oid = frag.GetId(e.neighbor);
+        auto elabel = e.data;
+        LOG(INFO) << "fid: " << frag.fid() << ", inner outgoing src=" << src_oid << ", dst=" << dst_oid << ", label=" << elabel;
+      }
+    }
+    for (auto v: frag.OuterVertices()) {
+      auto dst_oid = frag.GetId(v);
+      auto es = frag.GetIncomingAdjList(v);
+      for (auto e: es) {
+        auto src_oid = frag.GetId(e.neighbor);
+        auto elabel = e.data;
+        LOG(INFO) << "fid: " << frag.fid() << ", outer incoming src=" << src_oid << ", dst=" << dst_oid << ", label=" << elabel;
+      }
+    }
+    for (auto v: frag.InnerVertices()) {
+      auto dst_oid = frag.GetId(v);
+      auto es = frag.GetIncomingAdjList(v);
+      for (auto e: es) {
+        auto src_oid = frag.GetId(e.neighbor);
+        auto elabel = e.data;
+        LOG(INFO) << "fid: " << frag.fid() << ", inner incoming src=" << src_oid << ", dst=" << dst_oid << ", label=" << elabel;
+      }
+    }
+    // test 'GetFragId'
+    if (frag.fid() == 1) {
+      vertex_t v;
+      if (frag.GetVertex(12, v))
+        LOG(INFO) << "fid 1: oid 12's fid = " << frag.GetFragId(v);
+      if (frag.GetVertex(11, v))
+        LOG(INFO) << "fid 1: oid 11's fid = " << frag.GetFragId(v);
+      else
+        LOG(INFO) << "fid 1 can not obtain the info of oid 11";
+    }
+    /*=================================================== finish test. ===================================================*/
 
     ctx.next_modified.parallel_clear(thread_num());
 
