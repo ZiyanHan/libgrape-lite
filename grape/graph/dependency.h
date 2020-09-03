@@ -28,7 +28,7 @@ class Dependency {
   ~Dependency() {}
 
   // vertices.
-  inline int GetVerticesNum() const { return vertices_.size(); }
+  inline size_t GetVerticesNum() const { return vertices_.size(); }
 
   inline int GetVertexID(internal_vertex_t& v) { return v.vid(); }
 
@@ -47,7 +47,7 @@ class Dependency {
   inline std::vector<int> GetAllVerticesID() {
     std::vector<int> vids;
     vids.resize(0);
-    for (int i = 0; i < vertices_.size(); i++) {
+    for (size_t i = 0; i < vertices_.size(); i++) {
       vids.emplace_back(i);
     }
     return vids;
@@ -93,12 +93,14 @@ class Dependency {
     return v_parents;
   }
 
-  inline EDATA_T GetEdgeLabel(int src, int dst) {
+  inline bool GetEdgeLabel(int src, int dst, EDATA_T &elabel) {
     for (auto e: edges_) {
       if (e.src() == src && e.dst() == dst){
-        return e.edata();
+        elabel = e.edata();
+        return true;
       }
     }
+    return false;
   }
 
 
