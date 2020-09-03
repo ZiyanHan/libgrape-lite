@@ -5,43 +5,44 @@
 #include <string>
 #include <vector>
 
+#include "grape/types.h"
 #include "grape/graph/vertex.h"
 #include "grape/graph/edge.h"
-#include "grape/graph/adj_list.h"
 #include "grape/graph/literal.h"
-#include "grape/types.h"
 
+#include <grape/grape.h>
 
 namespace grape {
 
 /**
  * Graph Dependency.
- * This is a class for supporting some graph dependencies,
+ * This is a class for supporting all graph dependencies,
  * including keys, GFDs, GEDs, GMDs, GMKs,...
  */
 template <typename VDATA_T, typename EDATA_T>
 class Dependency {
 
  public:
+  using internal_vertex_t = internal::Vertex<int, VDATA_T>;
   Dependency() {}
   ~Dependency() {}
 
   // vertices.
-  inline int GetVerticesNum() const override { return vertices_.size(); }
+  inline int GetVerticesNum() const { return vertices_.size(); }
 
-  inline int GetVertexID(Vertex<int, VDATA_T>& v) { return v.vid(); }
+  inline int GetVertexID(internal_vertex_t& v) { return v.vid(); }
 
-  inline VDATA_T GetVertexData(Vertex<int, VDATA_T>& v) { return v.vdata(); }
+  inline VDATA_T GetVertexData(internal_vertex_t& v) { return v.vdata(); }
 
-  inline int32_t GetVertexLabel(Vertex<int, VDATA_T>& v) { return v.vdata().label_; }
+  inline int32_t GetVertexLabel(internal_vertex_t& v) { return v.vdata().label_; }
 
   inline int32_t GetVertexLabel(int vid) { return vertices_[vid].vdata().label_; }
 
-  inline std::vector<std::string> GetVertexAttributes(Vertex<int, VDATA_T>& v) { return v.vdata().attributes_; }
+  inline std::vector<std::string> GetVertexAttributes(internal_vertex_t& v) { return v.vdata().attributes_; }
 
-  inline std::vector<Vertex<int, VDATA_T>> GetVertices() { return vertices_; }
+  inline std::vector<internal_vertex_t> GetVertices() { return vertices_; }
 
-  inline void SetVertices(std::vector<Vertex<int, VDATA_T>>& vertices) { vertices_ = vertices; }
+  inline void SetVertices(std::vector<internal_vertex_t>& vertices) { vertices_ = vertices; }
 
   inline std::vector<int> GetAllVerticesID() {
     std::vector<int> vids;
@@ -66,7 +67,7 @@ class Dependency {
   inline Literal<EDATA_T>& GetLiteral(int lid) { assert(lid < literals_.size());  return literals_[lid]; }
 
   // edges.
-  inline size_t GetEdgeNum() const override { return edges_.size(); }
+  inline size_t GetEdgeNum() const { return edges_.size(); }
 
   inline std::vector<Edge<int, EDATA_T>> GetAllEdges() { return edges_; }
 
@@ -74,20 +75,20 @@ class Dependency {
 
   inline std::set<int> GetChildrenID(const int uid) {
     std::set<int> v_children;
-    v_children.resize(0);
+    v_children.clear();
     for (auto e: edges_) {
       if (e.src() == uid)
-        v_children.emplace_back(e.dst());
+        v_children.insert(e.dst());
     }
     return v_children;
   }
 
   inline std::set<int> GetParentsID(const int uid) {
     std::set<int> v_parents;
-    v_parents.resize(0);
+    v_parents.clear();
     for (auto e: edges_) {
       if (e.dst() == uid)
-        v_parents.emplace_back(e.src());
+        v_parents.insert(e.src());
     }
     return v_parents;
   }
@@ -102,7 +103,7 @@ class Dependency {
 
 
  private:
-  std::vector<Vertex<int, VDATA_T>> vertices_;
+  std::vector<internal_vertex_t> vertices_;
   std::vector<Edge<int, EDATA_T>> edges_;
   std::vector<Literal<EDATA_T>> literals_;
   std::vector<std::vector<int>> important_attrs;

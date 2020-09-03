@@ -52,7 +52,7 @@ class Literal {
 
   // l(x,y)
   // here the parameter 'link_tag' is useless, just for the convenience of distinguishing from M(x,y,l)
-  Literal(int vertex_x, int vertex_y, EDATA_T edgelabel, int link_tag){
+  Literal(int vertex_x, int vertex_y, EDATA_T edgelabel, bool link_tag){
     vid_x_ = vertex_x;
     vid_y_ = vertex_y;
     aid_x_ = -1;
